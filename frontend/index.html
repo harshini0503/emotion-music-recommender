@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Emotion Music Recommender</title>
+  <style>
+    body { font-family: system-ui, -apple-system; max-width: 920px; margin: 20px auto; padding: 0 12px; }
+    video { width: 360px; border-radius: 12px; border: 1px solid #ddd; }
+    button { padding: 10px 14px; border-radius: 10px; border: 1px solid #ccc; cursor: pointer; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: start; }
+    .card { background: #fafafa; padding: 12px; border-radius: 12px; border: 1px solid #eee; margin: 10px 0; }
+    pre { background: #f6f6f6; padding: 12px; border-radius: 12px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🎭→🎵 Emotion-Based Music Recommender</h1>
+
+  <div class="row">
+    <div>
+      <video id="video" autoplay playsinline></video><br><br>
+      <button id="snap">Capture & Recommend</button>
+      <p id="status"></p>
+    </div>
+
+    <div style="flex:1; min-width: 340px;">
+      <div class="card">
+        <div><b>Emotion:</b> <span id="emotion">—</span></div>
+        <div><b>Target Mood:</b> <span id="mood">—</span></div>
+      </div>
+
+      <div class="card">
+        <b>Recommendations</b>
+        <div id="recs"></div>
+      </div>
+
+      <div class="card">
+        <b>Debug (emotion probabilities)</b>
+        <pre id="probs">{}</pre>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="canvas" width="224" height="224" style="display:none;"></canvas>
+
+<script>
+const BACKEND = "http://127.0.0.1:8000";
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const snapBtn = document.getElementById("snap");
+const statusEl = document.getElementById("status");
+const emotionEl = document.getElementById("emotion");
+const moodEl = document.getElementById("mood");
+const recsEl = document.getElementById("recs");
+const probsEl = document.getElementById("probs");
+
+async function startCam() {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  video.srcObject = stream;
+}
+startCam();
+
+snapBtn.onclick = async () => {
+  statusEl.textContent = "Capturing frame...";
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.95));
+  const form = new FormData();
+  form.append("file", blob, "frame.jpg");
+
+  statusEl.textContent = "Running models...";
+  const res = await fetch(`${BACKEND}/predict`, { method: "POST", body: form });
+  const data = await res.json();
+
+  emotionEl.textContent = data.emotion;
+  moodEl.textContent = data.target_mood;
+  probsEl.textContent = JSON.stringify(data.emotion_probs, null, 2);
+
+  recsEl.innerHTML = "";
+  for (const r of data.recommendations) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div><b>${r.track}</b> — ${r.artist}</div>
+      <div>Score: ${Number(r.score).toFixed(4)}</div>
+      <div><a href="${r.spotify_url}" target="_blank">Open in Spotify</a></div>
+    `;
+    recsEl.appendChild(div);
+  }
+  statusEl.textContent = "Done ✅";
+};
+</script>
+</body>
+</html>
