@@ -5,88 +5,190 @@
   <title>Emotion Music Recommender</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system; max-width: 980px; margin: 18px auto; padding: 0 12px; }
-    h1 { margin: 0 0 14px; }
-    .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: start; }
-    .left { width: 380px; }
-    video { width: 100%; border-radius: 14px; border: 1px solid #ddd; background: #000; }
-    button, select {
-      padding: 10px 12px; border-radius: 12px; border: 1px solid #ccc;
-      cursor: pointer; background: #fff;
+    :root{
+      --bg:#0b0b10;
+      --panel:#12121a;
+      --panel2:#161622;
+      --text:#eaeaf2;
+      --muted:#a7a7b7;
+      --border:rgba(255,255,255,.08);
+      --accent:#1db954;
+      --accent2:#7c5cff;
+      --danger:#ff5c5c;
     }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .status { margin: 10px 0; font-size: 14px; }
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#f2f2f2; border:1px solid #e6e6e6; font-size: 13px; }
-    .card {
-      background: #fafafa; padding: 12px; border-radius: 14px;
-      border: 1px solid #eee; margin: 10px 0;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 500px at 10% 0%, rgba(124,92,255,.25), transparent 55%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(29,185,84,.18), transparent 60%),
+                  var(--bg);
+      color:var(--text);
     }
-    .grid { display:grid; grid-template-columns: 1fr; gap: 10px; }
-    .song {
-      display:flex; justify-content: space-between; gap: 12px;
-      align-items: center;
-      background:#fff; border:1px solid #eee; border-radius: 14px; padding: 10px 12px;
+    .wrap{max-width: 1100px; margin: 0 auto; padding: 18px 14px 40px;}
+    header{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px;}
+    .title{display:flex; flex-direction:column; gap:4px;}
+    h1{font-size:22px; margin:0; letter-spacing:.2px;}
+    .subtitle{color:var(--muted); font-size:13px;}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;}
+    .dot{width:8px; height:8px; border-radius:50%; background: var(--accent);}
+    .grid{display:grid; grid-template-columns: 420px 1fr; gap:16px;}
+    @media (max-width: 940px){ .grid{grid-template-columns: 1fr;} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
-    .song .meta { min-width: 0; }
-    .song .t { font-weight: 650; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-    .song .a { color:#666; font-size: 13px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-    .song a { text-decoration:none; }
-    .barwrap { background:#eee; border-radius: 999px; height: 10px; overflow:hidden; }
-    .bar { height: 10px; background:#333; width: 0%; }
-    .emoRow { display:grid; grid-template-columns: 90px 1fr 50px; gap: 10px; align-items:center; margin: 8px 0; }
-    pre { background: #f6f6f6; padding: 12px; border-radius: 14px; overflow-x: auto; font-size: 12px; }
-    .small { font-size: 12px; color:#666; }
+    .card h2{margin:0 0 10px; font-size:14px; color:var(--muted); font-weight:600; letter-spacing:.3px;}
+    video{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:#000;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    button{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      background: rgba(255,255,255,.05);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:600;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    button:hover{background: rgba(255,255,255,.08)}
+    button:active{transform: translateY(1px)}
+    button.primary{
+      background: linear-gradient(180deg, rgba(29,185,84,.95), rgba(29,185,84,.75));
+      color:#08120c;
+      border-color: rgba(29,185,84,.6);
+    }
+    button.primary:hover{background: linear-gradient(180deg, rgba(29,185,84,1), rgba(29,185,84,.8));}
+    button:disabled{opacity:.55; cursor:not-allowed;}
+
+    .status{margin-top:10px; color:var(--muted); font-size:13px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .kv{flex:1; min-width: 180px; padding:10px 12px; border:1px solid var(--border); border-radius:16px; background: rgba(0,0,0,.18);}
+    .kv .k{color:var(--muted); font-size:12px;}
+    .kv .v{margin-top:4px; font-weight:700; font-size:16px;}
+    .tag{display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background: rgba(255,255,255,.04); font-size:12px; color:var(--muted);}
+
+    .moods{display:flex; gap:8px; flex-wrap:wrap;}
+    .chip{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:700;
+      font-size:12px;
+    }
+    .chip.active{
+      border-color: rgba(29,185,84,.55);
+      background: rgba(29,185,84,.18);
+    }
+
+    .emoRow{display:grid; grid-template-columns: 90px 1fr 52px; gap:10px; align-items:center; margin:10px 0;}
+    .barwrap{background: rgba(255,255,255,.08); border-radius:999px; height:10px; overflow:hidden;}
+    .bar{height:10px; width:0%; background: linear-gradient(90deg, var(--accent2), var(--accent));}
+
+    .songs{display:grid; grid-template-columns: 1fr; gap:10px;}
+    .song{
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+    }
+    .song .meta{min-width:0;}
+    .song .t{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .song .a{color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
+    .song .s{color:var(--muted); font-size:12px; margin-top:6px;}
+    .song a{
+      text-decoration:none;
+      color: var(--text);
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      padding:8px 10px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .song a:hover{background: rgba(255,255,255,.10)}
+    pre{margin:0; background: rgba(0,0,0,.35); border:1px solid var(--border); padding:10px; border-radius:14px; overflow:auto; font-size:12px; color:#d8d8ee;}
+    .hint{color:var(--muted); font-size:12px; margin-top:8px;}
   </style>
 </head>
+
 <body>
-  <h1>🎭→🎵 Emotion-Based Music Recommender</h1>
-  <div class="small">Webcam → Emotion model → Mood → Song recommendations (Spotify links)</div>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>🎭 Emotion → 🎵 Music Recommender</h1>
+        <div class="subtitle">Capture a frame → predict emotion → map to mood → recommend songs</div>
+      </div>
+      <div class="pill"><span class="dot"></span><span id="pillStatus">Ready</span></div>
+    </header>
 
-  <div class="row">
-    <div class="left">
-      <video id="video" autoplay playsinline></video>
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <h2>Camera</h2>
+        <video id="video" autoplay playsinline></video>
 
-      <div class="controls">
-        <button id="snap">Capture & Recommend</button>
-        <button id="refresh" disabled>Refresh Recs</button>
+        <div class="controls">
+          <button class="primary" id="snap">Capture & Recommend</button>
+          <button id="refresh" disabled>Refresh Recs</button>
+        </div>
 
-        <select id="moodOverride">
-          <option value="">(Auto mood)</option>
-          <option value="Happy">Happy</option>
-          <option value="Energetic">Energetic</option>
-          <option value="Calm">Calm</option>
-          <option value="Sad">Sad</option>
-        </select>
+        <div class="status" id="status">Status: ready</div>
+
+        <div class="row">
+          <div class="kv">
+            <div class="k">Emotion</div>
+            <div class="v" id="emotion">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Mood</div>
+            <div class="v" id="mood">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="k" style="color:var(--muted); font-size:12px; margin-bottom:8px;">Mood selection</div>
+          <div class="moods" id="moodChips"></div>
+          <div class="hint">Choose a mood to override. Select <b>Auto</b> to use the emotion model.</div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <h2>Top Emotions</h2>
+          <div id="topemos"></div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <h2>Debug probabilities</h2>
+          <pre id="probs">{}</pre>
+        </div>
       </div>
 
-      <div class="status" id="status">Status: ready</div>
-
+      <!-- RIGHT -->
       <div class="card">
-        <div><b>Emotion:</b> <span class="pill" id="emotion">—</span></div>
-        <div style="margin-top:6px;"><b>Target Mood:</b> <span class="pill" id="mood">—</span></div>
-      </div>
-
-      <div class="card">
-        <b>Top Emotions</b>
-        <div id="topemos"></div>
-      </div>
-
-      <div class="card">
-        <b>Debug</b>
-        <pre id="probs">{}</pre>
+        <h2>Recommendations</h2>
+        <div class="songs" id="recs"></div>
       </div>
     </div>
 
-    <div style="flex:1; min-width: 360px;">
-      <div class="card">
-        <b>Recommendations</b>
-        <div class="grid" id="recs"></div>
-      </div>
-    </div>
+    <canvas id="canvas" width="224" height="224" style="display:none;"></canvas>
   </div>
-
-  <canvas id="canvas" width="224" height="224" style="display:none;"></canvas>
 
 <script>
 const BACKEND = "http://127.0.0.1:8000";
@@ -96,18 +198,41 @@ const canvas = document.getElementById("canvas");
 const snapBtn = document.getElementById("snap");
 const refreshBtn = document.getElementById("refresh");
 const statusEl = document.getElementById("status");
+const pillStatus = document.getElementById("pillStatus");
 const emotionEl = document.getElementById("emotion");
 const moodEl = document.getElementById("mood");
 const recsEl = document.getElementById("recs");
 const probsEl = document.getElementById("probs");
 const topEmosEl = document.getElementById("topemos");
-const moodOverrideEl = document.getElementById("moodOverride");
+const moodChipsEl = document.getElementById("moodChips");
 
 let lastBlob = null;
 
+// Mood chips state
+const MOODS = ["Auto", "Happy", "Energetic", "Calm", "Sad"];
+let selectedMood = "Auto";
+
 function setStatus(msg) {
   statusEl.textContent = "Status: " + msg;
+  pillStatus.textContent = msg;
 }
+
+function buildMoodChips(){
+  moodChipsEl.innerHTML = "";
+  for (const m of MOODS) {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (m === selectedMood ? " active" : "");
+    btn.textContent = m;
+    btn.onclick = () => {
+      selectedMood = m;
+      buildMoodChips();
+      // If user changes mood and we already have a frame, allow refresh
+      if (lastBlob) refreshBtn.disabled = false;
+    };
+    moodChipsEl.appendChild(btn);
+  }
+}
+buildMoodChips();
 
 async function startCam() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -116,17 +241,15 @@ async function startCam() {
 startCam();
 
 function renderTopEmotions(probs) {
-  // probs is {emotion: p}
   const entries = Object.entries(probs).sort((a,b)=>b[1]-a[1]).slice(0,3);
-
   topEmosEl.innerHTML = "";
   for (const [emo, p] of entries) {
     const row = document.createElement("div");
     row.className = "emoRow";
     row.innerHTML = `
-      <div>${emo}</div>
+      <div style="color:var(--muted)">${emo}</div>
       <div class="barwrap"><div class="bar" style="width:${(p*100).toFixed(1)}%"></div></div>
-      <div style="text-align:right">${(p*100).toFixed(1)}%</div>
+      <div style="text-align:right; color:var(--muted)">${(p*100).toFixed(1)}%</div>
     `;
     topEmosEl.appendChild(row);
   }
@@ -141,41 +264,47 @@ function renderRecs(recs) {
       <div class="meta">
         <div class="t">${r.track}</div>
         <div class="a">${r.artist}</div>
-        <div class="small">Score: ${Number(r.score).toFixed(4)}</div>
+        <div class="s">Score: ${Number(r.score).toFixed(4)}</div>
       </div>
       <div>
-        <a href="${r.spotify_url}" target="_blank">Open</a>
+        <a href="${r.spotify_url}" target="_blank">Open in Spotify</a>
       </div>
     `;
     recsEl.appendChild(div);
   }
 }
 
+async function captureFrame() {
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.95));
+}
+
 async function callPredict(blob) {
   const form = new FormData();
   form.append("file", blob, "frame.jpg");
 
-  const moodOverride = moodOverrideEl.value;
-  if (moodOverride) {
-    form.append("mood_override", moodOverride); // backend will ignore unless we add support
+  // ✅ Only send override when user selected manual mood
+  if (selectedMood !== "Auto") {
+    form.append("mood_override", selectedMood);
+  } else {
+    form.append("mood_override", "");
   }
 
   const res = await fetch(`${BACKEND}/predict`, { method: "POST", body: form });
   return await res.json();
 }
 
-async function captureFrame() {
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.95));
-  return blob;
-}
-
-snapBtn.onclick = async () => {
+async function runPipeline(isRefresh=false) {
   try {
     snapBtn.disabled = true;
-    setStatus("capturing…");
-    lastBlob = await captureFrame();
+    refreshBtn.disabled = true;
+    setStatus(isRefresh ? "refreshing…" : "capturing…");
+
+    if (!isRefresh) {
+      lastBlob = await captureFrame();
+    }
+    if (!lastBlob) throw new Error("No captured frame yet.");
 
     setStatus("running models…");
     const data = await callPredict(lastBlob);
@@ -187,34 +316,18 @@ snapBtn.onclick = async () => {
     renderTopEmotions(data.emotion_probs);
     renderRecs(data.recommendations);
 
-    refreshBtn.disabled = false;
     setStatus("done ✅");
   } catch (e) {
     console.error(e);
     setStatus("error (check console)");
   } finally {
     snapBtn.disabled = false;
+    if (lastBlob) refreshBtn.disabled = false;
   }
-};
+}
 
-refreshBtn.onclick = async () => {
-  if (!lastBlob) return;
-  try {
-    refreshBtn.disabled = true;
-    setStatus("refreshing…");
-    const data = await callPredict(lastBlob);
-    moodEl.textContent = data.target_mood;
-    probsEl.textContent = JSON.stringify(data.emotion_probs, null, 2);
-    renderTopEmotions(data.emotion_probs);
-    renderRecs(data.recommendations);
-    setStatus("updated ✅");
-  } catch (e) {
-    console.error(e);
-    setStatus("error (check console)");
-  } finally {
-    refreshBtn.disabled = false;
-  }
-};
+snapBtn.onclick = () => runPipeline(false);
+refreshBtn.onclick = () => runPipeline(true);
 </script>
 </body>
 </html>
