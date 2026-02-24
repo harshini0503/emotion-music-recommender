@@ -206,6 +206,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def root():
+    return {"message": "Backend is running. Use /docs, /health, or POST /predict."}
 
 @app.get("/health")
 def health():
