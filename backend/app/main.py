@@ -135,8 +135,15 @@ def spotify_search_url(track: str, artist: str) -> str:
 
 
 def recommend_songs(target_mood: str, top_k: int = 10) -> List[Dict[str, Any]]:
+    """
+    Better recommendation:
+    - Rank by XGBoost probability for target mood
+    - Avoid repeating same artist too much
+    - Add diversity by taking from top-N then sampling
+    """
     df = songs_df.copy()
 
+    # encode key/mode if string
     key_map = {"C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11}
     if "key" in df.columns and df["key"].dtype == object:
         df["key"] = df["key"].astype(str).str.strip().map(key_map)
@@ -155,18 +162,36 @@ def recommend_songs(target_mood: str, top_k: int = 10) -> List[Dict[str, Any]]:
 
     out = df.loc[feats.index, ["name","artist"]].copy()
     out["score"] = scores
-    out = out.sort_values("score", ascending=False).head(top_k)
+    out = out.sort_values("score", ascending=False)
 
+    # Take top-N candidates then diversify
+    N = min(200, len(out))
+    cand = out.head(N)
+
+    # Diversity: max 2 per artist
     recs = []
-    for _, r in out.iterrows():
+    artist_count = {}
+    for _, r in cand.iterrows():
         track = str(r.get("name",""))
         artist = str(r.get("artist",""))
+        if not track or not artist:
+            continue
+
+        artist_count.setdefault(artist, 0)
+        if artist_count[artist] >= 2:
+            continue
+
+        artist_count[artist] += 1
         recs.append({
             "track": track,
             "artist": artist,
             "score": float(r["score"]),
             "spotify_url": spotify_search_url(track, artist)
         })
+
+        if len(recs) >= top_k:
+            break
+
     return recs
 
 
