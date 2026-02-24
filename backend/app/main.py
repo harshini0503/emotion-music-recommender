@@ -12,7 +12,7 @@ import timm
 import joblib
 import xgboost as xgb
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -212,13 +212,15 @@ def health():
     return {"ok": True}
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+async def predict(file: UploadFile = File(...), mood_override: str = Form(default="")):
     img_bytes = await file.read()
     pil_img = Image.open(io.BytesIO(img_bytes))
 
     fer = predict_emotion(pil_img)
     emotion = fer["emotion"]
     mood = EMOTION_TO_MOOD.get(emotion, "Calm")
+    if mood_override and mood_override.strip():
+        mood = mood_override.strip()
 
     recs = recommend_songs(mood, top_k=10)
 
