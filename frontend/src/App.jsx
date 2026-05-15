@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "re
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-const BACKEND = "http://127.0.0.1:8000";
+const BACKEND = "https://emotion-music-backend-4lln.onrender.com";
 const MOODS = ["Auto", "Happy", "Energetic", "Calm", "Sad"];
 
 function Navbar() {
