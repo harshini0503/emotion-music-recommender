@@ -1,6 +1,17 @@
+# Python
 .venv/
+venv/
 __pycache__/
+*.pyc
+.env
+
+# macOS
 .DS_Store
-models/*
-data/*
-!data/README.md
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# datasets
+datasets/
+*.zip
